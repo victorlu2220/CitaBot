@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CitaBot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: black;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .title:hover {
+            transform: scale(1.2);
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        textarea {
+            width: 300px;
+            height: 500px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">CitaBot</div>
+
+    <div class="container">
+        <div class="box">
+            <label for="inputBox">INPUT BOX</label>
+            <textarea id="inputBox" placeholder="Paste your text here..."></textarea>
+        </div>
+        <button onclick="arrangeText()">ARRANGE</button>
+        <div class="box">
+            <label for="outputBox">OUTPUT BOX</label>
+            <textarea id="outputBox" placeholder="Output will appear here..." readonly></textarea>
+        </div>
+    </div>
+
+    <script>
+        function arrangeText() {
+            let content = document.getElementById("inputBox").value;
+            document.getElementById("outputBox").value = arranger(content);
+        }
+        
+        function arranger(content) {
+            let numbers = [...content.matchAll(/\[(\d+)\]/g)].map(match => parseInt(match[1]));
+            let count = numbers.reduce((acc, num) => {
+                acc[num] = (acc[num] || 0) + 1;
+                return acc;
+            }, {});
+            
+            let num_cit = numbers.length;
+            let repeated_numbers = Object.keys(count).filter(num => count[num] > 1).map(Number);
+            
+            let update_for_repeated_nums = [repeated_numbers, Array(repeated_numbers.length).fill(null)];
+            
+            let i = 1;
+            let next_start = 0;
+            
+            while (i <= num_cit) {
+                let first_instance = content.slice(next_start).match(/\[(\d+)\]/);
+                if (!first_instance) break;
+                
+                let current_start = content.indexOf(first_instance[0], next_start);
+                let current_end = current_start + first_instance[0].length;
+                let first_instance_value = parseInt(first_instance[1]);
+                
+                if (repeated_numbers.includes(first_instance_value)) {
+                    let pos = repeated_numbers.indexOf(first_instance_value);
+                    let new_cit = update_for_repeated_nums[1][pos];
+                    
+                    if (new_cit === null) {
+                        update_for_repeated_nums[1][pos] = i;
+                    } else {
+                        content = content.slice(0, current_start) + `[${new_cit}]` + content.slice(current_end);
+                        next_start = current_end;
+                        continue;
+                    }
+                }
+                
+                content = content.slice(0, current_start) + `[${i}]` + content.slice(current_end);
+                next_start = current_end;
+                i++;
+            }
+            
+            return content;
+        }
+    </script>
+</body>
+</html>
+
