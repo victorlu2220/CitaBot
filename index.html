@@ -13,16 +13,23 @@
             align-items: center;
             height: 100vh;
             background-color: #f4f4f4;
+            padding: 20px;
         }
         .title {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
             color: black;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             transition: transform 0.3s ease-in-out;
         }
         .title:hover {
             transform: scale(1.2);
+        }
+        .instructions {
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 20px;
+            max-width: 1000px;
         }
         .container {
             display: flex;
@@ -44,6 +51,11 @@
             padding: 10px;
             font-size: 16px;
         }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
         button {
             padding: 10px 20px;
             font-size: 16px;
@@ -54,12 +66,23 @@
 <body>
     <div class="title">CitaBot</div>
 
+    <div class="instructions">
+        <strong>Instructions:</strong>
+        <ol>
+            <li>Copy and paste your entire out-of-order essay into the left box, INCLUDING REFERENCES, then hit <strong>ARRANGE</strong>.</li>
+            <li>Copy the updated reference list from the box on the right, paste it in the left box, then hit <strong>SORT REFERENCE</strong>.</li>
+        </ol>
+    </div>
+
     <div class="container">
         <div class="box">
             <label for="inputBox">INPUT BOX</label>
             <textarea id="inputBox" placeholder="Paste your text here..."></textarea>
         </div>
-        <button onclick="arrangeText()">ARRANGE</button>
+        <div class="button-container">
+            <button onclick="arrangeText()">ARRANGE</button>
+            <button onclick="sortReferences()">SORT REFERENCE</button>
+        </div>
         <div class="box">
             <label for="outputBox">OUTPUT BOX</label>
             <textarea id="outputBox" placeholder="Output will appear here..." readonly></textarea>
@@ -115,7 +138,26 @@
             
             return content;
         }
+
+        function sortReferences() {
+            let content = document.getElementById("inputBox").value;
+            let pattern = /\[(\d+)\](.*?)\n/g;
+            let matches = [...content.matchAll(pattern)];
+
+            if (matches.length === 0) {
+                document.getElementById("outputBox").value = "No references found to sort.";
+                return;
+            }
+
+            // Sort matches by citation number
+            let sortedRefs = matches.map(match => [parseInt(match[1]), match[2].trim()])
+                                    .sort((a, b) => a[0] - b[0]);
+
+            // Rebuild sorted reference string
+            let sortedContent = sortedRefs.map(ref => `[${ref[0]}] ${ref[1]}`).join("\n");
+
+            document.getElementById("outputBox").value = sortedContent;
+        }
     </script>
 </body>
 </html>
-
